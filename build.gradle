@@ -1,0 +1,88 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '3.0.2'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    versions = [
+            allure: "2.32.0",
+            cucumber: "7.16.1",
+            selenium: "4.21.0",
+            restAssured: "5.5.0",
+            junit: "5.10.2",
+            webDriverManager: "5.8.0",
+            junitPlatformSuite: "1.10.2",
+    ]
+}
+
+allure {
+    version = versions.allure
+    useJUnit5 {
+        version = versions.allure
+    }
+}
+
+dependencies {
+    implementation(
+            "org.seleniumhq.selenium:selenium-java:${versions.selenium}",
+            "io.github.bonigarcia:webdrivermanager:${versions.webDriverManager}",
+            "io.rest-assured:rest-assured:${versions.restAssured}",
+            "io.qameta.allure:allure-cucumber7-jvm:${versions.allure}",
+            "io.cucumber:cucumber-java:${versions.cucumber}",
+            "io.cucumber:cucumber-junit-platform-engine:${versions.cucumber}",
+            "org.junit.platform:junit-platform-suite:${versions.junitPlatformSuite}"
+    )
+
+    testImplementation(
+            "io.cucumber:cucumber-java:${versions.cucumber}",
+            "io.cucumber:cucumber-junit-platform-engine:${versions.cucumber}",
+            "org.junit.jupiter:junit-jupiter:${versions.junit}",
+            "org.junit.platform:junit-platform-suite:${versions.junitPlatformSuite}"
+    )
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty "cucumber.plugin", "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm,pretty,summary"
+    systemProperty "cucumber.filter.tags",
+            System.getProperty("cucumber.filter.tags", "")
+}
+
+tasks.register('uiTest', Test) {
+    useJUnitPlatform()
+
+    testClassesDirs = files(sourceSets.test.output.classesDirs, sourceSets.main.output.classesDirs)
+    classpath = sourceSets.test.runtimeClasspath
+
+    filter {
+        includeTestsMatching "runner.UiTestRunner"
+    }
+
+    systemProperty "cucumber.filter.tags", "@ui"
+    systemProperty "cucumber.plugin", "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm,pretty,summary"
+
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('apiTest', Test) {
+    useJUnitPlatform()
+
+    testClassesDirs = files(sourceSets.test.output.classesDirs, sourceSets.main.output.classesDirs)
+    classpath = sourceSets.test.runtimeClasspath
+
+    filter {
+        includeTestsMatching "runner.ApiTestRunner"
+    }
+
+    systemProperty "cucumber.filter.tags", "@api"
+    systemProperty "cucumber.plugin", "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm,pretty,summary"
+
+    outputs.upToDateWhen { false }
+}
