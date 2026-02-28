@@ -22,7 +22,6 @@ public class CurrentCitySteps {
                         .when()
                         .get("/local/ajax/current-city.php")
                         .then()
-                        .log().all()
                         .extract().response()
         );
     }
